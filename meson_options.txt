@@ -1,0 +1,7 @@
+option(
+	'policy-default',
+	type: 'combo',
+	choices: [ 'auto', 'allow-all', 'deny-all', 'rba' ],
+	value: 'allow-all',
+	description: 'Default policy when no specific policy was set'
+)
