@@ -1427,7 +1427,7 @@ load_config(struct weston_config **config, bool no_config,
 #define OPTION_SIZE (3)
 #define ARGVS_SIZE (OPTION_SIZE*2 + 3)
 #define RVGPU_PROXY_PATH "/usr/bin/rvgpu-proxy"
-#define RVGPU_PROXY_PATH "/usr/bin/weston"
+#define WESTON_PATH "/usr/bin/weston"
 
 static bool is_dir_exist(const char *path)
 {
@@ -1442,7 +1442,7 @@ load_UHMI_transmitter(void)
 	struct weston_config_section *section;
 	const char *name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
-	char *const weston_args[] = {RVGPU_PROXY_PATH, "--backend", "drm-backend.so", 
+	char *const weston_args[] = {WESTON_PATH, "--backend", "drm-backend.so", 
 								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
 								 "--log=/tmp/weston.log", "&", NULL};
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
@@ -1490,9 +1490,9 @@ load_UHMI_transmitter(void)
 		for (idx = 1; idx < ARGVS_SIZE -2; idx++)
 		{
 			if (idx%2)
-				rvproxy_args[idx] = uhmi_option[idx/2];
+				strcpy(	rvproxy_args[idx], uhmi_option[idx/2]);
 			else
-				rvproxy_args[idx] = opt_value[idx/2 - 1];
+				strcpy(rvproxy_args[idx], opt_value[idx/2 - 1]);
 		}
 		rvproxy_args[ARGVS_SIZE - 2] = "&";
 		rvproxy_args[ARGVS_SIZE - 1] = NULL;
