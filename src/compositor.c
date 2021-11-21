@@ -1451,12 +1451,6 @@ load_UHMI_transmitter(void)
 	pid_t child_pid1, child_pid2;
 	int idx;
 
-	/* Check if runtime_dir exists */
-	if (!is_dir_exist("/run/user/0")) {
-    	mkdir("/run/user/0", 0777);
-	}
-
-	setenv("XDG_RUNTIME_DIR", "/run/user/0", 1);
 
 	child_pid1 = fork();
 	if (child_pid1 == -1) {
