@@ -1730,6 +1730,8 @@ int wet_main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 	};
+	
+	weston_log("Start compositor\n");
 
 	wl_list_init(&ivi.outputs);
 	wl_list_init(&ivi.surfaces);
