@@ -1473,6 +1473,14 @@ load_UHMI_transmitter(void)
 					}
 				}
 			}
+			else
+			{
+				weston_log("Get parameters successfully\n");
+				for(idx = 0; idx < OPTION_SIZE; idx++)
+				{
+					weston_log("argv[%d] = %s\n", idx, opt_value[idx]);
+				}
+			}
 			break;
 		}		
 
@@ -1496,6 +1504,7 @@ load_UHMI_transmitter(void)
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
 	}
 	else{
+		#ifdef AAAA
 		/* Parent process */
 		child_pid2 = fork();
 		if (child_pid2 == -1) {
@@ -1508,6 +1517,7 @@ load_UHMI_transmitter(void)
 			execv(weston_args[0], weston_args);
 			weston_log("Error: exec weston failed: %s\n", strerror(errno));
 		}
+		#endif
 	}
 }
 #else
