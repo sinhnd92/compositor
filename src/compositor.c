@@ -613,110 +613,6 @@ load_waltham_plugin(struct ivi_compositor *ivi, struct weston_config *config)
 }
 #endif
 
-#ifdef HAVE_UHMI
-#define OPTION_SIZE (3)
-#define ARGVS_SIZE (OPTION_SIZE*2 + 3)
-#define RVGPU_PROXY_PATH "/usr/bin/rvgpu-proxy"
-
-static inline int finit_module(int fd, const char *uargs, int flags)
-{
-    return syscall(__NR_finit_module, fd, uargs, flags);
-}
-
-static bool is_dir_exist(const char *path)
-{
-	struct stat st = {0};
-	return ((stat(path, &st) == 0) && S_ISDIR(st.st_mode)) ? true : false;
-}
-
-static void
-load_UHMI_transmitter(void)
-{
-	struct weston_config *config = NULL;
-	struct weston_config_section *section;
-	const char *name = NULL;
-	char *rvproxy_args[ARGVS_SIZE];
-	char *const weston_args[] = {"/usr/bin/weston", "--backend", "drm-backend.so", 
-								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
-								 "--log=/tmp/weston.log", "&", NULL};
-	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
-	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
-	const char *opt_value[OPTION_SIZE + 1];
-	pid_t child_pid1, child_pid2;
-	int fd1, fd2;
-	int idx;
-
-	/* Check if runtime_dir exists */
-	if (!is_dir_exist("/run/user/0")) {
-    	mkdir("/run/user/0", 0777);
-	}
-
-	setenv("XDG_RUNTIME_DIR", "/run/user/0", 1);
-
-	child_pid1 = fork();
-	if (child_pid1 == -1) {
-		weston_log("Fork error: %s, failed to load UHMI transmitter\n", strerror(errno));
-		return;
-	}
-	/* Child process */
-	else if (child_pid1 == 0){
-		if (load_config(&config, 0, "agl-compositor.ini") < 0)
-			return;
-
-		while (weston_config_next_section(config, &section, &name)) {
-			if (0 == strcmp(name, "unified-hmi-output")) {
-				for (idx = 0; idx < OPTION_SIZE; idx++)
-				{
-					if (0 != weston_config_section_get_string(section, opt_key[idx], &opt_value[idx], 0))
-					{
-						weston_log("Can not get sestion timeout of UHMI config\n");
-						return;						
-					}
-				}
-			}
-			break;
-		}		
-
-		/* Concatenate Ip and Port */
-		strcat(opt_value[2], ":");
-		strcat(opt_value[2], opt_value[3]);
-
-		for (idx = 1; idx < ARGVS_SIZE -2; idx++)
-		{
-			if (idx%2)
-				rvproxy_args[idx] = uhmi_option[idx/2];
-			else
-				rvproxy_args[idx] = opt_value[idx/2 - 1];
-		}
-		rvproxy_args[ARGVS_SIZE - 2] = "&";
-		rvproxy_args[ARGVS_SIZE - 1] = NULL;
-
-
-		execv(rvproxy_args[0], rvproxy_args);
-		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
-	}
-	else{
-		/* Parent process */
-		child_pid2 = fork();
-		if (child_pid2 == -1) {
-			weston_log("Fork error: %s, failed to load Weston program\n", strerror(errno));
-			return;
-		}
-
-		if (child_pid2 == 0)
-		{
-			execv(weston_args[0], weston_args);
-			weston_log("Error: exec weston failed: %s\n", strerror(errno));
-		}
-	}
-}
-#else
-static void
-load_UHMI_transmitter(void)
-{
-}
-#endif
-
 #ifdef HAVE_REMOTING
 static int
 drm_backend_remoted_output_configure(struct weston_output *output,
@@ -1526,6 +1422,107 @@ load_config(struct weston_config **config, bool no_config,
 
 	return 0;
 }
+
+#ifdef HAVE_UHMI
+#define OPTION_SIZE (3)
+#define ARGVS_SIZE (OPTION_SIZE*2 + 3)
+#define RVGPU_PROXY_PATH "/usr/bin/rvgpu-proxy"
+#define RVGPU_PROXY_PATH "/usr/bin/weston"
+
+static bool is_dir_exist(const char *path)
+{
+	struct stat st = {0};
+	return ((stat(path, &st) == 0) && S_ISDIR(st.st_mode)) ? true : false;
+}
+
+static void
+load_UHMI_transmitter(void)
+{
+	struct weston_config *config = NULL;
+	struct weston_config_section *section;
+	const char *name = NULL;
+	char *rvproxy_args[ARGVS_SIZE];
+	char *const weston_args[] = {RVGPU_PROXY_PATH, "--backend", "drm-backend.so", 
+								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
+								 "--log=/tmp/weston.log", "&", NULL};
+	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
+	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
+	char *opt_value[OPTION_SIZE + 1];
+	pid_t child_pid1, child_pid2;
+	int idx;
+
+	/* Check if runtime_dir exists */
+	if (!is_dir_exist("/run/user/0")) {
+    	mkdir("/run/user/0", 0777);
+	}
+
+	setenv("XDG_RUNTIME_DIR", "/run/user/0", 1);
+
+	child_pid1 = fork();
+	if (child_pid1 == -1) {
+		weston_log("Fork error: %s, failed to load UHMI transmitter\n", strerror(errno));
+		return;
+	}
+	/* Child process */
+	else if (child_pid1 == 0){
+		if (load_config(&config, 0, "agl-compositor.ini") < 0)
+			return;
+
+		while (weston_config_next_section(config, &section, &name)) {
+			if (0 == strcmp(name, "unified-hmi-output")) {
+				for (idx = 0; idx < OPTION_SIZE; idx++)
+				{
+					if (0 != weston_config_section_get_string(section, opt_key[idx], &opt_value[idx], 0))
+					{
+						weston_log("Can not get sestion timeout of UHMI config\n");
+						return;						
+					}
+				}
+			}
+			break;
+		}		
+
+		rvproxy_args[0] = RVGPU_PROXY_PATH;
+		/* Concatenate Ip and Port */
+		strcat(opt_value[2], ":");
+		strcat(opt_value[2], opt_value[3]);
+
+		for (idx = 1; idx < ARGVS_SIZE -2; idx++)
+		{
+			if (idx%2)
+				rvproxy_args[idx] = uhmi_option[idx/2];
+			else
+				rvproxy_args[idx] = opt_value[idx/2 - 1];
+		}
+		rvproxy_args[ARGVS_SIZE - 2] = "&";
+		rvproxy_args[ARGVS_SIZE - 1] = NULL;
+
+
+		execv(rvproxy_args[0], rvproxy_args);
+		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
+	}
+	else{
+		/* Parent process */
+		child_pid2 = fork();
+		if (child_pid2 == -1) {
+			weston_log("Fork error: %s, failed to load Weston program\n", strerror(errno));
+			return;
+		}
+
+		if (child_pid2 == 0)
+		{
+			execv(weston_args[0], weston_args);
+			weston_log("Error: exec weston failed: %s\n", strerror(errno));
+		}
+	}
+}
+#else
+static void
+load_UHMI_transmitter(void)
+{
+}
+#endif
+
 
 static FILE *logfile;
 
