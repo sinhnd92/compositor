@@ -71,7 +71,6 @@
 #include <fcntl.h>
 #include <linux/module.h>
 #include <sys/syscall.h>
-#include <sys/utsname.h>
 #endif
 
 static int cached_tm_mday = -1;
@@ -635,7 +634,6 @@ load_UHMI_transmitter(void)
 {
 	struct weston_config *config = NULL;
 	struct weston_config_section *section;
-	struct utsname uts;
 	const char *name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
 	char *const weston_args[] = {"/usr/bin/weston", "--backend", "drm-backend.so", 
@@ -644,20 +642,10 @@ load_UHMI_transmitter(void)
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
 	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
 	const char *opt_value[OPTION_SIZE + 1];
-	char virtio_lo_path[128];
-	char virtio_gpu_path[128];
 	pid_t child_pid1, child_pid2;
 	int fd1, fd2;
 	int idx;
 
-	/* Get kernel release */
-	if (uname(&uts) < 0)
-		weston_log("Can not get kernel release\n");
-		return;
-  	else {
-		  snprintf(virtio_lo_path, sizeof virtio_lo_path,
-		           "/lib/modules/%s/extra/virtio_lo.ko", uts.release);
-  	}
 	/* Check if runtime_dir exists */
 	if (!is_dir_exist("/run/user/0")) {
     	mkdir("/run/user/0", 0777);
