@@ -71,6 +71,7 @@
 #include <fcntl.h>
 #include <linux/module.h>
 #include <sys/syscall.h>
+#include <sys/utsname.h>
 #endif
 
 static int cached_tm_mday = -1;
@@ -616,11 +617,7 @@ load_waltham_plugin(struct ivi_compositor *ivi, struct weston_config *config)
 #ifdef HAVE_UHMI
 #define OPTION_SIZE (3)
 #define ARGVS_SIZE (OPTION_SIZE*2 + 3)
-#define VIRTIO_LO_BIN_PATH "path/to/virtio-lo"
-#define VIRTIO_LO_MODULE_PATH "/sys/module/virtio_lo"
-#define VIRTIO_GPU_BIN_PATH "path/to/virtio-GPU"
-#define VIRTIO_GPU_MODULE_PATH "/sys/module/virtio_gpu" //need to check again path
-#define RVGPU_PROXY_PATH "/usr/local/bin/rvgpu-proxy"
+#define RVGPU_PROXY_PATH "/usr/bin/rvgpu-proxy"
 
 static inline int finit_module(int fd, const char *uargs, int flags)
 {
@@ -638,29 +635,30 @@ load_UHMI_transmitter(void)
 {
 	struct weston_config *config = NULL;
 	struct weston_config_section *section;
+	struct utsname uts;
 	const char *name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
-	char *const weston_args[] = {"/usr/local/bin/weston", "--backend", "drm-backend.so", 
+	char *const weston_args[] = {"/usr/bin/weston", "--backend", "drm-backend.so", 
 								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
 								 "--log=/tmp/weston.log", "&", NULL};
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
 	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
 	const char *opt_value[OPTION_SIZE + 1];
+	char virtio_lo_path[128];
+	char virtio_gpu_path[128];
 	pid_t child_pid1, child_pid2;
 	int fd1, fd2;
 	int idx;
 
-	/* Check if kernel module files and runtime_dir exists */
-    if (access(VIRTIO_LO_BIN_PATH, F_OK) == -1) {
-        weston_log("Error: File \"%s\" doesn't exist\n", VIRTIO_LO_BIN_PATH);
-        return;
-    }
-
-	if (access(VIRTIO_GPU_BIN_PATH, F_OK) == -1) {
-        weston_log("Error: File \"%s\" doesn't exist\n", VIRTIO_GPU_BIN_PATH);
-        return;
-    }
-
+	/* Get kernel release */
+	if (uname(&uts) < 0)
+		weston_log("Can not get kernel release\n");
+		return;
+  	else {
+		  snprintf(virtio_lo_path, sizeof virtio_lo_path,
+		           "/lib/modules/%s/extra/virtio_lo.ko", uts.release);
+  	}
+	/* Check if runtime_dir exists */
 	if (!is_dir_exist("/run/user/0")) {
     	mkdir("/run/user/0", 0777);
 	}
@@ -674,41 +672,6 @@ load_UHMI_transmitter(void)
 	}
 	/* Child process */
 	else if (child_pid1 == 0){
-		/* Load kernel modules */
-		if (!is_dir_exist("VIRTIO_LO_MODULE_PATH"))
-		{
-			fd1 = open(VIRTIO_LO_BIN_PATH, O_RDONLY);
-			if (fd1 < 0){
-				weston_log("Unable to open virtio_lo module file\n");
-				return;
-			}
-			if (finit_module(fd1, "", 0)){
-				weston_log("Error when loading virtio_lo module");
-        		close(fd1);
-				return;
-			}
-			else {
-				weston_log("Successfully loading virtio_lo module\n");
-			}
-		}
-
-		if (!is_dir_exist("VIRTIO_GPU_MODULE_PATH"))
-		{
-			fd2 = open(VIRTIO_GPU_BIN_PATH, O_RDONLY);
-			if (fd2 < 0){
-				weston_log("Unable to open virtio_gpu module file\n");
-				return;
-			}
-			if (finit_module(fd2, "", 0)){
-				weston_log("Error when loading virtio_gpu module");
-        		close(fd1);
-				return;
-			}
-			else {
-				weston_log("Successfully loading virtio_gpu module\n");
-			}
-		}
-
 		if (load_config(&config, 0, "agl-compositor.ini") < 0)
 			return;
 
