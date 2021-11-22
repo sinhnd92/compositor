@@ -64,8 +64,6 @@
 #include <waltham-transmitter/transmitter_api.h>
 #endif
 
-#define HAVE_UHMI
-
 #ifdef HAVE_UHMI
 #include <sys/stat.h>
 #include <fcntl.h>
