@@ -1436,10 +1436,10 @@ static bool is_dir_exist(const char *path)
 }
 
 static void
-load_UHMI_transmitter(void)
+load_UHMI_transmitter(struct ivi_compositor *ivi)
 {
-	struct weston_config *config = NULL;
-	struct weston_config_section *section;
+	struct weston_config *config = ivi->config;
+	struct weston_config_section *section = NULL;
 	const char *name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
 	char *const weston_args[] = {WESTON_PATH, "--backend", "drm-backend.so", 
@@ -1460,9 +1460,6 @@ load_UHMI_transmitter(void)
 	}
 	/* Child process */
 	else if (child_pid1 == 0){
-		if (load_config(&config, 0, "agl-compositor.ini") < 0)
-			return;
-
 		while (weston_config_next_section(config, &section, &name)) {
 			if (0 == strcmp(name, "unified-hmi-output")) {
 				for (idx = 0; idx < OPTION_SIZE; idx++)
@@ -1472,17 +1469,17 @@ load_UHMI_transmitter(void)
 						weston_log("Can not get sestion timeout of UHMI config\n");
 						return;						
 					}
+					else
+					{
+						weston_log("Get parameters successfully\n");
+						for(idx = 0; idx < OPTION_SIZE; idx++)
+						{
+							weston_log("argv[%d] = %s\n", idx, opt_value[idx]);
+						}
+					}
 				}
+				break;
 			}
-			else
-			{
-				weston_log("Get parameters successfully\n");
-				for(idx = 0; idx < OPTION_SIZE; idx++)
-				{
-					weston_log("argv[%d] = %s\n", idx, opt_value[idx]);
-				}
-			}
-			break;
 		}		
 
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
@@ -1523,7 +1520,7 @@ load_UHMI_transmitter(void)
 }
 #else
 static void
-load_UHMI_transmitter(void)
+load_UHMI_transmitter(struct ivi_compositor *ivi)
 {
 }
 #endif
@@ -1822,7 +1819,7 @@ int wet_main(int argc, char *argv[])
 		goto error_compositor;
 	}
 
-	load_UHMI_transmitter();
+	load_UHMI_transmitter(&ivi);
 
 	ivi.heads_changed.notify = heads_changed;
 	weston_compositor_add_heads_changed_listener(ivi.compositor,
