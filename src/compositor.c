@@ -1461,7 +1461,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	/* Child process */
 	else if (child_pid1 == 0){
 		while (weston_config_next_section(config, &section, &name)) {
-			if (0 == strcmp(name, "unified-hmi-output")) {
+			if (0 == strcmp(name, "uhmi")) {
 				for (idx = 0; idx < OPTION_SIZE; idx++)
 				{
 					if (0 != weston_config_section_get_string(section, opt_key[idx], &opt_value[idx], 0))
@@ -1471,11 +1471,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 					}
 					else
 					{
-						weston_log("Get parameters successfully\n");
-						for(idx = 0; idx < OPTION_SIZE; idx++)
-						{
-							weston_log("argv[%d] = %s\n", idx, opt_value[idx]);
-						}
+						weston_log("\nGet parameters successfully: argv[%d] = %s", idx, opt_value[idx]);
 					}
 				}
 				break;
