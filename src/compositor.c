@@ -64,6 +64,8 @@
 #include <waltham-transmitter/transmitter_api.h>
 #endif
 
+#define HAVE_UHMI
+
 #ifdef HAVE_UHMI
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -1449,7 +1451,8 @@ load_UHMI_transmitter(void)
 	pid_t child_pid1, child_pid2;
 	int idx;
 
-
+	weston_log("Start loading UHMI\n");
+	
 	child_pid1 = fork();
 	if (child_pid1 == -1) {
 		weston_log("Fork error: %s, failed to load UHMI transmitter\n", strerror(errno));
