@@ -1725,7 +1725,6 @@ int wet_main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 	};
 	
-	weston_log("Start compositor\n");
 
 	wl_list_init(&ivi.outputs);
 	wl_list_init(&ivi.surfaces);
@@ -1766,6 +1765,8 @@ int wet_main(int argc, char *argv[])
 	logger = weston_log_subscriber_create_log(logfile);
 	weston_log_subscribe(log_ctx, logger, "log");
 
+	weston_log("Start compositor\n"); /*delete*/
+	
 	weston_log("Command line: %s\n", cmdline);
 	free(cmdline);
 
