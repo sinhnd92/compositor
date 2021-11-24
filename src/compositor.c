@@ -1440,7 +1440,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 {
 	struct weston_config *config = ivi->config;
 	struct weston_config_section *section = NULL;
-	const char *name = NULL;
+	const char *section_name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
 	char *const weston_args[] = {WESTON_PATH, "--backend", "drm-backend.so", 
 								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
@@ -1461,8 +1461,9 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	}
 	/* Child process */
 	else if (child_pid1 == 0){
-		while (weston_config_next_section(config, &section, &name)) {
-			if (0 != strcmp(name, "uhmi"))
+		while (weston_config_next_section(config, &section, &section_name)) {
+			#ifdef BBBB
+			if (0 != strcmp(section_name, "uhmi"))
 				continue;
 			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
 			{
@@ -1494,13 +1495,14 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			}	
 			if (0 != weston_config_section_get_string(section, "port", &port, 0))
 			{
-				weston_log("Can not get host of UHMI config\n");
+				weston_log("Can not get port of UHMI config\n");
 				return;						
 			}
 			else
 			{
 				weston_log("\nGet parameters successfully: %s", port);
-			}	
+			}
+			#endif
 		}		
 #ifdef JJJJ
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
