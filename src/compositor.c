@@ -1474,7 +1474,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			{
 				weston_log("\nGet parameters successfully: %s", ses_timeout);
 			}
-			#ifdef BBBB
 			if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
 			{
 				weston_log("Can not get mode of UHMI config\n");
@@ -1502,7 +1501,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			{
 				weston_log("\nGet parameters successfully: %s", port);
 			}
-			#endif
 		}		
 #ifdef JJJJ
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
