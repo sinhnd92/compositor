@@ -1464,7 +1464,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		while (weston_config_next_section(config, &section, &section_name)) {
 			if (0 != strcmp(section_name, "uhmi"))
 				continue;
-			#ifdef BBBB
+			
 			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
 			{
 				weston_log("Can not get sestion timeout of UHMI config\n");
@@ -1474,7 +1474,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			{
 				weston_log("\nGet parameters successfully: %s", ses_timeout);
 			}
-			
+			#ifdef BBBB
 			if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
 			{
 				weston_log("Can not get mode of UHMI config\n");
