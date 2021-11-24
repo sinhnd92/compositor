@@ -1520,7 +1520,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
 	}
 	else{
-		#ifdef AAAA
 		/* Parent process */
 		child_pid2 = fork();
 		if (child_pid2 == -1) {
@@ -1533,7 +1532,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			execv(weston_args[0], weston_args);
 			weston_log("Error: exec weston failed: %s\n", strerror(errno));
 		}
-		#endif
 	}
 }
 #else
