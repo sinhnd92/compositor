@@ -1425,7 +1425,7 @@ load_config(struct weston_config **config, bool no_config,
 
 #ifdef HAVE_UHMI
 #define OPTION_SIZE (3)
-#define ARGVS_SIZE (OPTION_SIZE*2 + 3)
+#define ARGVS_SIZE (OPTION_SIZE*2 + 2)
 #define RVGPU_PROXY_PATH "/usr/bin/rvgpu-proxy"
 #define WESTON_PATH "/usr/bin/weston"
 
@@ -1514,8 +1514,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		rvproxy_args[4] = mode;
 		rvproxy_args[5] = "-n";
 		rvproxy_args[6] = addr;
-		rvproxy_args[7] = "&";
-		rvproxy_args[8] = NULL;
+		rvproxy_args[7] = NULL;
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
