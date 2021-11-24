@@ -71,6 +71,7 @@
 #include <fcntl.h>
 #include <linux/module.h>
 #include <sys/syscall.h>
+#include <signal.h>
 #endif
 
 static int cached_tm_mday = -1;
@@ -1442,9 +1443,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	struct weston_config_section *section = NULL;
 	const char *section_name = NULL;
 	char *rvproxy_args[ARGVS_SIZE];
-	char *const weston_args[] = {WESTON_PATH, "--backend", "drm-backend.so", 
-								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
-								 "--log=/tmp/weston.log", "&", NULL};
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
 	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
 	char *ses_timeout, *mode, *host, *port;
@@ -1461,7 +1459,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		return;
 	}
 	/* Child process */
-	else if (child_pid1 == 0){
+	if (child_pid1 == 0){
 		while (weston_config_next_section(config, &section, &section_name)) {
 			if (0 != strcmp(section_name, "uhmi"))
 				continue;
@@ -1515,23 +1513,11 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		rvproxy_args[5] = "-n";
 		rvproxy_args[6] = addr;
 		rvproxy_args[7] = NULL;
+		
+		signal(SIGHUP, SIG_IGN);
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
-	}
-	else{
-		/* Parent process */
-		child_pid2 = fork();
-		if (child_pid2 == -1) {
-			weston_log("Fork error: %s, failed to load Weston program\n", strerror(errno));
-			return;
-		}
-
-		if (child_pid2 == 0)
-		{
-			execv(weston_args[0], weston_args);
-			weston_log("Error: exec weston failed: %s\n", strerror(errno));
-		}
 	}
 }
 #else
