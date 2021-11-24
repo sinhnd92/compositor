@@ -1462,9 +1462,9 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	/* Child process */
 	else if (child_pid1 == 0){
 		while (weston_config_next_section(config, &section, &section_name)) {
-			#ifdef BBBB
 			if (0 != strcmp(section_name, "uhmi"))
 				continue;
+			#ifdef BBBB
 			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
 			{
 				weston_log("Can not get sestion timeout of UHMI config\n");
