@@ -1447,6 +1447,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 								 "--log=/tmp/weston.log", "&", NULL};
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
 	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
+	char *ses_timeout, *mode, *host, *port;
 	char *opt_value[OPTION_SIZE + 1];
 	pid_t child_pid1, child_pid2;
 	int idx;
@@ -1461,23 +1462,47 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	/* Child process */
 	else if (child_pid1 == 0){
 		while (weston_config_next_section(config, &section, &name)) {
-			if (0 == strcmp(name, "uhmi")) {
-				for (idx = 0; idx < OPTION_SIZE; idx++)
-				{
-					if (0 != weston_config_section_get_string(section, opt_key[idx], &opt_value[idx], 0))
-					{
-						weston_log("Can not get sestion timeout of UHMI config\n");
-						return;						
-					}
-					else
-					{
-						weston_log("\nGet parameters successfully: argv[%d] = %s", idx, opt_value[idx]);
-					}
-				}
-				break;
+			if (0 != strcmp(name, "uhmi"))
+				continue;
+			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
+			{
+				weston_log("Can not get sestion timeout of UHMI config\n");
+				return;						
 			}
+			else
+			{
+				weston_log("\nGet parameters successfully: %s", ses_timeout);
+			}
+			
+			if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
+			{
+				weston_log("Can not get mode of UHMI config\n");
+				return;						
+			}
+			else
+			{
+				weston_log("\nGet parameters successfully: %s", mode);
+			}	
+			if (0 != weston_config_section_get_string(section, "host", &host, 0))
+			{
+				weston_log("Can not get host of UHMI config\n");
+				return;						
+			}
+			else
+			{
+				weston_log("\nGet parameters successfully: %s", host);
+			}	
+			if (0 != weston_config_section_get_string(section, "port", &port, 0))
+			{
+				weston_log("Can not get host of UHMI config\n");
+				return;						
+			}
+			else
+			{
+				weston_log("\nGet parameters successfully: %s", port);
+			}	
 		}		
-
+#ifdef JJJJ
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
 		/* Concatenate Ip and Port */
 		strcat(opt_value[2], ":");
@@ -1496,6 +1521,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
+#endif
 	}
 	else{
 		#ifdef AAAA
