@@ -1503,7 +1503,8 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 				weston_log("\nGet parameters successfully: %s", port);
 			}
 		}
-
+		
+		weston_log("\nPort: %s", port);
 		snprintf(addr, 50, "%s:%s", host, port);
 		
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
