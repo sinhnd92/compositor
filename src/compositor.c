@@ -1448,6 +1448,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	const char *uhmi_option[OPTION_SIZE] = {"-l", "-s", "-n"};
 	const char *opt_key[OPTION_SIZE + 1] = {"ses_timeout", "mode", "host", "port"};
 	char *ses_timeout, *mode, *host, *port;
+	char addr[50];
 	char *opt_value[OPTION_SIZE + 1];
 	pid_t child_pid1, child_pid2;
 	int idx;
@@ -1464,7 +1465,6 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		while (weston_config_next_section(config, &section, &section_name)) {
 			if (0 != strcmp(section_name, "uhmi"))
 				continue;
-			
 			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
 			{
 				weston_log("Can not get sestion timeout of UHMI config\n");
@@ -1474,6 +1474,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 			{
 				weston_log("\nGet parameters successfully: %s", ses_timeout);
 			}
+			
 			if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
 			{
 				weston_log("Can not get mode of UHMI config\n");
@@ -1502,26 +1503,18 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 				weston_log("\nGet parameters successfully: %s", port);
 			}
 		}		
-#ifdef JJJJ
 		rvproxy_args[0] = RVGPU_PROXY_PATH;
-		/* Concatenate Ip and Port */
-		strcat(opt_value[2], ":");
-		strcat(opt_value[2], opt_value[3]);
-
-		for (idx = 1; idx < ARGVS_SIZE -2; idx++)
-		{
-			if (idx%2)
-				strcpy(	rvproxy_args[idx], uhmi_option[idx/2]);
-			else
-				strcpy(rvproxy_args[idx], opt_value[idx/2 - 1]);
-		}
-		rvproxy_args[ARGVS_SIZE - 2] = "&";
-		rvproxy_args[ARGVS_SIZE - 1] = NULL;
-
+		rvproxy_args[1] = "-l";
+		rvproxy_args[2] = ses_timeout;
+		rvproxy_args[3] = "-s";
+		rvproxy_args[4] = mode;
+		rvproxy_args[5] = "-n";
+		rvproxy_args[6] = snprintf(addr, 50, "%s:%s", host, port);
+		rvproxy_args[7] = "&";
+		rvproxy_args[8] = NULL;
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
-#endif
 	}
 	else{
 		#ifdef AAAA
