@@ -1441,7 +1441,7 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	struct weston_config *config = ivi->config;
 	struct weston_config_section *section = NULL;
 	const char *name = NULL;
-	char *rvproxy_args[] = {RVGPU_PROXY_PATH, "-l", "0", "-s", "1280x720@0,0", "-n", "127.0.0.1:55667", "&", NULL};
+	char *rvproxy_args[ARGVS_SIZE];
 	char *const weston_args[] = {WESTON_PATH, "--backend", "drm-backend.so", 
 								 "--tty=2", "--seat=seat_virtual", "-i", "0", 
 								 "--log=/tmp/weston.log", "&", NULL};
@@ -1460,6 +1460,39 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 	}
 	/* Child process */
 	else if (child_pid1 == 0){
+		while (weston_config_next_section(config, &section, &name)) {
+			if (0 == strcmp(name, "uhmi")) {
+				for (idx = 0; idx < OPTION_SIZE; idx++)
+				{
+					if (0 != weston_config_section_get_string(section, opt_key[idx], &opt_value[idx], 0))
+					{
+						weston_log("Can not get sestion timeout of UHMI config\n");
+						return;						
+					}
+					else
+					{
+						weston_log("\nGet parameters successfully: argv[%d] = %s", idx, opt_value[idx]);
+					}
+				}
+				break;
+			}
+		}		
+
+		rvproxy_args[0] = RVGPU_PROXY_PATH;
+		/* Concatenate Ip and Port */
+		strcat(opt_value[2], ":");
+		strcat(opt_value[2], opt_value[3]);
+
+		for (idx = 1; idx < ARGVS_SIZE -2; idx++)
+		{
+			if (idx%2)
+				strcpy(	rvproxy_args[idx], uhmi_option[idx/2]);
+			else
+				strcpy(rvproxy_args[idx], opt_value[idx/2 - 1]);
+		}
+		rvproxy_args[ARGVS_SIZE - 2] = "&";
+		rvproxy_args[ARGVS_SIZE - 1] = NULL;
+
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
