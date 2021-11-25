@@ -1516,6 +1516,11 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		rvproxy_args[8] = NULL;
 		
 		signal(SIGHUP, SIG_IGN);
+		
+		if (chmod("/dev/virtio-lo", S_IROTH|S_IWOTH|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) != 0)
+		{
+			weston_log("Can not chmod\n");
+		}
 
 		execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno));
