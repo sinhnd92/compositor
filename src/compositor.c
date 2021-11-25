@@ -1453,78 +1453,71 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 
 	weston_log("Start loading UHMI\n");
 	
-	child_pid1 = fork();
-	if (child_pid1 == -1) {
-		weston_log("Fork error: %s, failed to load UHMI transmitter\n", strerror(errno));
-		return;
-	}
-	/* Child process */
-	if (child_pid1 == 0){
-		while (weston_config_next_section(config, &section, &section_name)) {
-			if (0 != strcmp(section_name, "uhmi"))
-				continue;
-			if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
-			{
-				weston_log("Can not get sestion timeout of UHMI config\n");
-				return;						
-			}
-			else
-			{
-				weston_log("\nGet parameters successfully: %s", ses_timeout);
-			}
-			
-			if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
-			{
-				weston_log("Can not get mode of UHMI config\n");
-				return;						
-			}
-			else
-			{
-				weston_log("\nGet parameters successfully: %s", mode);
-			}	
-			if (0 != weston_config_section_get_string(section, "host", &host, 0))
-			{
-				weston_log("Can not get host of UHMI config\n");
-				return;						
-			}
-			else
-			{
-				weston_log("\nGet parameters successfully: %s", host);
-			}	
-			if (0 != weston_config_section_get_string(section, "port", &port, 0))
-			{
-				weston_log("Can not get port of UHMI config\n");
-				return;						
-			}
-			else
-			{
-				weston_log("\nGet parameters successfully: %s", port);
-			}
+	while (weston_config_next_section(config, &section, &section_name)) {
+		if (0 != strcmp(section_name, "uhmi"))
+			continue;
+		if (0 != weston_config_section_get_string(section, "ses_timeout", &ses_timeout, 0))
+		{
+			weston_log("Can not get sestion timeout of UHMI config\n");
+			return;						
 		}
-		
-		weston_log("\nPort: %s", port);
-		snprintf(addr, 50, "%s:%s", host, port);
-		
-		rvproxy_args[0] = RVGPU_PROXY_PATH;
-		rvproxy_args[1] = "-l";
-		rvproxy_args[2] = ses_timeout;
-		rvproxy_args[3] = "-s";
-		rvproxy_args[4] = mode;
-		rvproxy_args[5] = "-n";
-		rvproxy_args[6] = addr;
-		rvproxy_args[7] = "&";
-		rvproxy_args[8] = NULL;
-		
-		signal(SIGHUP, SIG_IGN);
-		
-		weston_log("Call system() instead");
-		int sysres = system("nohup rvgpu-proxy -l 0 -s 1280x720@0,0 -n 127.0.0.1:55667 &");
-		if(sysres == -1){
-			weston_log("system() failed\n");
+		else
+		{
+			weston_log("\nGet parameters successfully: %s", ses_timeout);
 		}
-		/* execv(rvproxy_args[0], rvproxy_args);
-		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno)); */
+
+		if (0 != weston_config_section_get_string(section, "mode", &mode, 0))
+		{
+			weston_log("Can not get mode of UHMI config\n");
+			return;						
+		}
+		else
+		{
+			weston_log("\nGet parameters successfully: %s", mode);
+		}	
+		if (0 != weston_config_section_get_string(section, "host", &host, 0))
+		{
+			weston_log("Can not get host of UHMI config\n");
+			return;						
+		}
+		else
+		{
+			weston_log("\nGet parameters successfully: %s", host);
+		}	
+		if (0 != weston_config_section_get_string(section, "port", &port, 0))
+		{
+			weston_log("Can not get port of UHMI config\n");
+			return;						
+		}
+		else
+		{
+			weston_log("\nGet parameters successfully: %s", port);
+		}
 	}
+
+	weston_log("\nPort: %s", port);
+	snprintf(addr, 50, "%s:%s", host, port);
+
+	rvproxy_args[0] = RVGPU_PROXY_PATH;
+	rvproxy_args[1] = "-l";
+	rvproxy_args[2] = ses_timeout;
+	rvproxy_args[3] = "-s";
+	rvproxy_args[4] = mode;
+	rvproxy_args[5] = "-n";
+	rvproxy_args[6] = addr;
+	rvproxy_args[7] = "&";
+	rvproxy_args[8] = NULL;
+
+	signal(SIGHUP, SIG_IGN);
+
+	weston_log("Call system() instead");
+	int sysres = system("nohup rvgpu-proxy -l 0 -s 1280x720@0,0 -n 127.0.0.1:55667 &");
+	if(sysres == -1){
+		weston_log("system() failed\n");
+	}
+	/* execv(rvproxy_args[0], rvproxy_args);
+	weston_log("Error: exec rvproxy failed: %s\n", strerror(errno)); */
+	
 }
 #else
 static void
