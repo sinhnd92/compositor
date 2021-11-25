@@ -1518,7 +1518,10 @@ load_UHMI_transmitter(struct ivi_compositor *ivi)
 		signal(SIGHUP, SIG_IGN);
 		
 		weston_log("Call system() instead");
-		system("nohup rvgpu-proxy -l 0 -s 1280x720@0,0 -n 127.0.0.1:55667 &");
+		int sysres = system("nohup rvgpu-proxy -l 0 -s 1280x720@0,0 -n 127.0.0.1:55667 &");
+		if(sysres == -1){
+			weston_log("system() failed\n");
+		}
 		/* execv(rvproxy_args[0], rvproxy_args);
 		weston_log("Error: exec rvproxy failed: %s\n", strerror(errno)); */
 	}
